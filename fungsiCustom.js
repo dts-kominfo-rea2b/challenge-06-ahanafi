@@ -1,4 +1,7 @@
 // TODO: import module bila dibutuhkan di sini
+const { rejects } = require('assert');
+const fs = require('fs');
+const { resolve } = require('path');
 
 // ! JANGAN DIMODIFIKASI
 let file1 = "./data1.json";
@@ -16,9 +19,42 @@ let modifyFile3 = (val) => {
   file3 = val;
 };
 
+const getMessage = (data) => {
+  const parsedData = JSON.parse(data);
+
+  if(parsedData?.message) {
+    return parsedData?.message.split(' ')[1];
+  }
+
+  if(parsedData?.length > 0) {
+    const arrMessage = parsedData.map(item => {
+      if(item?.message) return item?.message;
+      if(item?.data?.message) return item?.data?.message;
+    });
+    return arrMessage[arrMessage.length - 1].split(' ')[1]
+  }
+}
+
 // TODO: Kerjakan bacaData
 // gunakan variabel file1, file2, dan file3
-const bacaData = null;
+const bacaData = (fnCallback) => {
+  const files = [file1, file2, file3];
+
+  const results = files.map(file => {
+    return new Promise((resolve, reject) => {
+      fs.readFile(file, "utf-8", (err, data) => {
+        if(err) return reject(err);
+        const message = getMessage(data);
+        resolve(message);
+      });
+    })
+  });
+
+  // Proccess result in Callback
+  Promise.all(results)
+    .then(value => fnCallback(null, value))
+    .catch(err => fnCallback(err, null));
+};
 
 // ! JANGAN DIMODIFIKASI
 module.exports = {
